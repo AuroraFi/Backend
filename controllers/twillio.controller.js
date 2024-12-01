@@ -8,10 +8,10 @@ const {
 const twilio = require("twilio");
 const accountSid = TWILIO_ACCOUNT_SID_CALL;
 const authToken = TWILIO_AUTH_TOKEN_CALL;
-const fromPhoneNumber = TWILLIO_PHONE_NUMBER;
+const toPhoneNumber = TWILLIO_PHONE_NUMBER;
 const client = twilio(accountSid, authToken);
 
-function triggerTwillioCall(toPhoneNumber) {
+function triggerTwillioCall(fromPhoneNumber) {
   console.log("triggerTwillioCall -> toPhoneNumber");
   try {
     let url = `${HOST}/llm/transcribe`;

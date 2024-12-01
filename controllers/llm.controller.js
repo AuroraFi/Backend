@@ -3,7 +3,6 @@ const OpenAI = require("openai");
 async function llmController(userPrompt) {
   console.log("User Prompt:", userPrompt);
   const API_KEY = process.env.CHATGPT_API_KEY;
-  console.log(API_KEY);
   const openai = new OpenAI({
     apiKey: API_KEY,
   });
@@ -23,7 +22,9 @@ async function llmController(userPrompt) {
       ],
     });
 
-    const llmResponse = completion.data.choices[0].message.content;
+    console.log("Completion:", completion.choices[0].message.content);
+
+    const llmResponse = completion.choices[0].message.content;
     console.log("Llm Response:", llmResponse);
 
     return llmResponse;
