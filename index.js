@@ -1,4 +1,5 @@
 const express = require("express");
+const connectDB = require("./config/mongoose");
 const bodyParser = require("body-parser");
 const llmRoutes = require("./routes/llm.route");
 const twillioRoutes = require("./routes/twillio.route");
@@ -16,6 +17,8 @@ app.use(bodyParser.json());
 app.use("/llm", llmRoutes);
 app.use("/twillio", twillioRoutes);
 // webSocket.app.ws("/ws", wsHandler);
+
+connectDB();
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
