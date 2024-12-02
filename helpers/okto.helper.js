@@ -1,10 +1,13 @@
 const axios = require("axios");
 const triggerTwillioCall = require("../controllers/twillio_sms");
+const { set } = require("mongoose");
 
 async function executeTransaction(network_name, from, to, data, value) {
+  console.log("sending from helper", network_name, from, to, data, value);
   if (!network_name || !from || !to || !data || !value) {
     throw new Error("Missing required fields");
   }
+  const amount = "0x" + (value * 10 ** 18).toString(16);
 
   const requestBody = {
     network_name: "POLYGON_TESTNET_AMOY",
@@ -12,10 +15,10 @@ async function executeTransaction(network_name, from, to, data, value) {
       from: "0xd10e4a5d95f0060f8da0758e63237ab9f34a7503",
       to,
       data: "0x00",
-      value,
+      amount,
     },
   };
-
+  console.log("testing ", requestBody);
   try {
     const response = await axios.post(
       "https://sandbox-api.okto.tech/api/v1/rawtransaction/execute",
@@ -27,10 +30,16 @@ async function executeTransaction(network_name, from, to, data, value) {
         },
       }
     );
-    const data = response.data.order_id;
+    console.log("response", response.data);
 
-    getTransactionStatus(data);
-    return response.data;
+    const order_id = response.data.data.orderId;
+    console.log("response", order_id);
+
+    setTimeout(() => {
+      getTransactionStatus(order_id);
+    }, 3000);
+
+    return "Transaction executed successfully";
   } catch (error) {
     console.error(
       "Error executing transaction:",
@@ -47,6 +56,8 @@ async function getTransactionStatus(order_id) {
     throw new Error("order_id is required");
   }
 
+  console.log("order_id from getT", order_id);
+
   try {
     const response = await axios.get(
       "https://sandbox-api.okto.tech/api/v1/rawtransaction/status",
@@ -59,8 +70,14 @@ async function getTransactionStatus(order_id) {
       }
     );
 
-    body =
-      "Transaction Order Id: " + order_id + " Status: " + response.data.status;
+    const body = `
+🔹 Transaction Details 🔹
+
+📝 Order ID: ${order_id}
+✅ Status: ${response.data.status}
+🔗 Transaction Hash: ${response.data.data.jobs[0].transaction_hash}
+🌐 Network: ${response.data.data.jobs[0].network_name}
+`;
     triggerTwillioCall(body);
 
     return response.data;
@@ -103,7 +120,7 @@ async function getPortfolio() {
 
       triggerTwillioCall(body);
 
-      return `📊 Portfolio Summary 📊\n\nYou currently hold ${totalTokens} different tokens in your portfolio:\n\n${tokenDetails}\n\nNeed help managing your portfolio? Feel free to ask!`;
+      return `You currently hold ${totalTokens} different tokens in your portfolio ${tokenDetails} Need help managing your portfolio? Feel free to ask!`;
     }
 
     return "📊 Your portfolio is currently empty. Would you like to add some tokens?";
