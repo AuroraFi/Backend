@@ -1,5 +1,6 @@
 const Contact = require("../models/contact");
 const Auth = require("../models/auth");
+const { getContactByNameForUser } = require("../helpers/getAddressByName");
 
 exports.addContact = async (req, res) => {
   const { mobile_number, name, address } = req.body;
@@ -73,26 +74,20 @@ exports.getContactByName = async (req, res) => {
   }
 
   try {
-    const user = await Auth.findOne({ mobile_number });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const contact = await Contact.findOne({ user: user._id, name });
-
-    if (!contact) {
-      return res.status(404).json({ message: "Contact not found" });
-    }
+    const contact = await getContactByNameForUser(mobile_number, name);
 
     res.status(200).json({
       message: "Contact retrieved successfully",
       data: contact,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to retrieve contact",
-      error: error.message,
+    const statusCode =
+      error.message === "User not found" ||
+      error.message === "Contact not found"
+        ? 404
+        : 500;
+    res.status(statusCode).json({
+      message: error.message,
     });
   }
 };
