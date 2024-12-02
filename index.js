@@ -3,7 +3,7 @@ const connectDB = require("./config/mongoose");
 const bodyParser = require("body-parser");
 const llmRoutes = require("./routes/llm.route");
 const twillioRoutes = require("./routes/twillio.route");
-const oktoRoutes = require("./routes/okto.route");
+const authRoutes = require("./routes/auth.route");
 const ws = require("express-ws");
 const { wsHandler } = require("./controllers/ws.controller");
 
@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 
 app.use("/llm", llmRoutes);
 app.use("/twillio", twillioRoutes);
-app.use("/okto", oktoRoutes);
+app.use("/api", authRoutes);
 // webSocket.app.ws("/ws", wsHandler);
 
 connectDB();
