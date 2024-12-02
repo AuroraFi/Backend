@@ -10,6 +10,8 @@ const router = express.Router();
 const twillio = require("twilio");
 const llmController = require("../controllers/llm.controller");
 
+console.log("HOST");
+
 router.post("/transcribe", async (req, res) => {
   console.log("calling the function");
   const skip = req.query.skip;

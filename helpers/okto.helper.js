@@ -1,4 +1,5 @@
 const axios = require("axios");
+const triggerTwillioCall = require("../controllers/twillio_sms");
 
 async function executeTransaction(network_name, from, to, data, value) {
   if (!network_name || !from || !to || !data || !value) {
@@ -6,11 +7,11 @@ async function executeTransaction(network_name, from, to, data, value) {
   }
 
   const requestBody = {
-    network_name,
+    network_name: "POLYGON_TESTNET_AMOY",
     transaction: {
-      from,
+      from: "0xd10e4a5d95f0060f8da0758e63237ab9f34a7503",
       to,
-      data,
+      data: "0x00",
       value,
     },
   };
@@ -26,7 +27,9 @@ async function executeTransaction(network_name, from, to, data, value) {
         },
       }
     );
+    const data = response.data.order_id;
 
+    getTransactionStatus(data);
     return response.data;
   } catch (error) {
     console.error(
@@ -56,6 +59,10 @@ async function getTransactionStatus(order_id) {
       }
     );
 
+    body =
+      "Transaction Order Id: " + order_id + " Status: " + response.data.status;
+    triggerTwillioCall(body);
+
     return response.data;
   } catch (error) {
     console.error(
@@ -80,7 +87,26 @@ async function getPortfolio() {
       }
     );
 
-    return response.data;
+    if (response.data?.data?.tokens) {
+      const tokens = response.data.data.tokens;
+      const totalTokens = tokens.length;
+
+      const tokenDetails = tokens
+        .map(
+          (token) =>
+            `• ${token.token_name}: ${Number(token.quantity).toFixed(
+              4
+            )} tokens on ${token.network_name}`
+        )
+        .join("\n");
+      const body = `📊 Portfolio Summary 📊\n\nYou currently hold ${totalTokens} different tokens in your portfolio:\n\n${tokenDetails}\n\nNeed help managing your portfolio? Feel free to ask!`;
+
+      triggerTwillioCall(body);
+
+      return `📊 Portfolio Summary 📊\n\nYou currently hold ${totalTokens} different tokens in your portfolio:\n\n${tokenDetails}\n\nNeed help managing your portfolio? Feel free to ask!`;
+    }
+
+    return "📊 Your portfolio is currently empty. Would you like to add some tokens?";
   } catch (error) {
     console.error(
       "Error fetching portfolio:",
@@ -91,7 +117,6 @@ async function getPortfolio() {
     );
   }
 }
-
 module.exports = {
   executeTransaction,
   getTransactionStatus,

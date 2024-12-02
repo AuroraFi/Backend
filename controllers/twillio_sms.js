@@ -8,21 +8,19 @@ const {
 const twilio = require("twilio");
 const accountSid = TWILIO_ACCOUNT_SID_CALL;
 const authToken = TWILIO_AUTH_TOKEN_CALL;
-const fromPhoneNumber = TWILLIO_PHONE_NUMBER;
+const toPhoneNumber = TWILLIO_PHONE_NUMBER;
 const client = twilio(accountSid, authToken);
 
-function triggerTwillioCall(toPhoneNumber) {
+function triggerTwillioCall(body) {
   console.log("triggerTwillioCall -> toPhoneNumber");
   try {
-    let url = `${HOST}/llm/transcribe`;
-    console.log("connecting", url);
-    client.calls.create({
-      url: url,
-      to: toPhoneNumber,
-      from: fromPhoneNumber,
+    client.messages.create({
+      body: body,
+      to: +917057147271,
+      from: +17752597090,
     });
 
-    return `Called Initiated Successfully!`;
+    return `SMS Sent Successfully!`;
   } catch (err) {
     console.log(err);
 
